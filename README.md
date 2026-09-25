@@ -48,11 +48,30 @@ Hệ thống tự động kích hoạt bộ dữ liệu mẫu theo yêu cầu:
 
 ---
 
+### 6. Quản lý trường học & Kho món ăn có Autocomplete
+- **Tab Trường học (`/schools`)**: Quản lý danh sách các trường học (Tên, địa chỉ, số điện thoại, ghi chú). Tự động gợi ý tên trường khi tạo thực đơn; có nút *Lập thực đơn* để lập menu ngay cho trường đã chọn.
+- **Tab Kho món ăn (`/dishes`)**: Quản lý kho món ăn MongoDB với tính năng **Autocomplete thông minh**: khi gõ phím, danh mục món ăn sẽ gợi ý ngay tức thì, hỗ trợ phím mũi tên và Tab/Enter để chọn nhanh.
+- **Chuyển đổi SPA Tabs tức thì (0ms)**: Chuyển đổi giữa 3 tab *Tạo thực đơn*, *Trường học*, *Kho món ăn* hoàn toàn không reload trang, giữ nguyên 100% dữ liệu biểu mẫu đang soạn thảo.
+
+### 7. Phông chữ Open Sans & 8 tùy chọn Typography cho ảnh
+- Toàn bộ giao diện website sử dụng phông chữ **Open Sans** hiện đại, thanh thoát, tối ưu tiếng Việt.
+- Bảng ảnh thực đơn cho phép chuyển đổi tức thì giữa **8 phông chữ**:
+  1. *Times New Roman* (Chuẩn công văn / file Word mẫu)
+  2. *Open Sans* (Hiện đại, trong trẻo)
+  3. *Roboto* (Chuẩn mực, dễ đọc)
+  4. *Be Vietnam Pro* (Tối ưu Việt ngữ)
+  5. *Merriweather* (Serif trang nhã)
+  6. *Lora* (Serif cổ điển)
+  7. *Playfair Display* (Nghệ thuật, sang trọng)
+  8. *Montserrat* (Trẻ trung, năng động)
+
+---
+
 ## 🛠️ Công Nghệ Sử Dụng
 
 - **Frontend**: React 18, Next.js 14, TypeScript, Lucide Icons.
-- **Styling**: Vanilla CSS cao cấp với hệ thống token màu sắc, typography Be Vietnam Pro & Merriweather, hỗ trợ responsive hoàn hảo.
-- **Backend**: Next.js App Router Server Endpoints (`/api/menus`, `/api/dishes`, `/api/seed`).
+- **Styling**: Vanilla CSS cao cấp với phông chữ Open Sans chuẩn mực, hỗ trợ responsive di động và máy tính.
+- **Backend**: Next.js App Router Server Endpoints (`/api/menus`, `/api/dishes`, `/api/schools`, `/api/seed`).
 - **Database (NoSQL)**: MongoDB & Mongoose.
   - Hỗ trợ kết nối với MongoDB cài trên máy hoặc MongoDB Atlas thông qua biến môi trường `MONGODB_URI`.
   - **Cơ chế tự động fallback**: Nếu máy chưa khởi động service MongoDB, hệ thống tự động khởi tạo **Embedded MongoDB Server** ngầm, giúp ứng dụng chạy được 100% ngay lập tức mà không cần cài đặt thêm phần mềm bên ngoài.
