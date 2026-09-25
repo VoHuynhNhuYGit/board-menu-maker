@@ -166,7 +166,7 @@ export const MenuPreview = forwardRef<MenuPreviewHandle, MenuPreviewProps>(
     const dateRangeText =
       menuData.startDate && menuData.endDate
         ? `Từ ngày ${formatDisplayDateStr(menuData.startDate)} đến ngày ${formatDisplayDateStr(menuData.endDate)}`
-        : 'Từ ngày 28/9/2026 đến ngày 1/10/2026';
+        : 'Chưa chọn khoảng ngày';
 
     return (
       <div
@@ -312,7 +312,7 @@ export const MenuPreview = forwardRef<MenuPreviewHandle, MenuPreviewProps>(
                     margin: '0 0 6px 0',
                   }}
                 >
-                  THỰC ĐƠN {menuData.schoolName || 'TRƯỜNG TIỂU HỌC TRƯNG VƯƠNG'}
+                  THỰC ĐƠN {menuData.schoolName || 'TRƯỜNG HỌC'}
                 </h1>
                 <h2
                   style={{
@@ -323,7 +323,7 @@ export const MenuPreview = forwardRef<MenuPreviewHandle, MenuPreviewProps>(
                     margin: '0 0 6px 0',
                   }}
                 >
-                  TUẦN {menuData.weekNumber || '3'}
+                  TUẦN {menuData.weekNumber || '—'}
                 </h2>
                 <div
                   style={{

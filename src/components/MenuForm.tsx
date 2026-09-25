@@ -109,10 +109,10 @@ export const MenuForm: React.FC<MenuFormProps> = ({
 
     const newDay: IDayPlan = {
       dayOfWeek: nextDow,
-      dateDisplay: `Ngày ${currentLength + 1}`,
+      dateDisplay: 'Ngày ...',
       dateValue: '',
-      mainMeals: ['Cơm trắng'],
-      sideMeals: ['Sữa'],
+      mainMeals: [],
+      sideMeals: [],
     };
 
     setMenuData((prev) => ({

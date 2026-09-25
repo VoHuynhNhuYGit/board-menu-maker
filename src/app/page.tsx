@@ -11,6 +11,7 @@ import { SchoolsView } from '@/components/SchoolsView';
 import { DishesView } from '@/components/DishesView';
 import {
   Save,
+  Plus,
   Image as ImageIcon,
   FileText,
   CheckCircle2,
@@ -18,43 +19,13 @@ import {
   Info,
 } from 'lucide-react';
 
-// Dữ liệu mẫu khởi tạo chuẩn theo file tuan-3.docx
-const SAMPLE_WEEK_3_DATA: IMenuData = {
-  schoolName: 'Trường Tiểu học Trưng Vương',
-  weekNumber: 3,
-  startDate: '2026-09-28',
-  endDate: '2026-10-01',
-  days: [
-    {
-      dayOfWeek: '2',
-      dateDisplay: 'Ngày 28/9',
-      dateValue: '2026-09-28',
-      mainMeals: ['Gà kho sả', 'Canh khoai mỡ thịt bằm', 'Rau cải thìa xào', 'Cơm trắng'],
-      sideMeals: ['Sữa'],
-    },
-    {
-      dayOfWeek: '3',
-      dateDisplay: 'Ngày 29/9',
-      dateValue: '2026-09-29',
-      mainMeals: ['Nạc dăm kho đậu hũ', 'Canh cải ngọt thịt bằm', 'Bông cải cà rốt xào', 'Cơm trắng'],
-      sideMeals: ['Sữa'],
-    },
-    {
-      dayOfWeek: '4',
-      dateDisplay: 'Ngày 30/9',
-      dateValue: '2026-09-30',
-      mainMeals: ['Phi lê cá điêu hồng chiên giòn', 'Đậu que xào', 'Canh chua', 'Cơm trắng'],
-      sideMeals: ['Sữa'],
-    },
-    {
-      dayOfWeek: '5',
-      dateDisplay: 'Ngày 1/10',
-      dateValue: '2026-10-01',
-      mainMeals: ['Nui xào bò băm + chả lụa', 'Rau củ quả'],
-      sideMeals: ['Sữa'],
-    },
-  ],
-};
+const createEmptyMenu = (weekNumber: number | string = ''): IMenuData => ({
+  schoolName: '',
+  weekNumber,
+  startDate: '',
+  endDate: '',
+  days: [],
+});
 
 const normalizeDateValue = (value?: string) => {
   if (!value) return '';
@@ -73,7 +44,7 @@ interface ToastMessage {
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'menu' | 'saved' | 'schools' | 'dishes'>('menu');
-  const [menuData, setMenuData] = useState<IMenuData>(SAMPLE_WEEK_3_DATA);
+  const [menuData, setMenuData] = useState<IMenuData>(() => createEmptyMenu());
   const [availableDishes, setAvailableDishes] = useState<IDishItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [dbStatus, setDbStatus] = useState<'connected' | 'connecting' | 'error'>('connecting');
@@ -117,22 +88,6 @@ export default function HomePage() {
     const initData = async () => {
       try {
         await fetchDishes();
-        // Kiểm tra xem đã có thực đơn nào trong DB chưa
-        const menusRes = await fetch('/api/menus');
-        const menusData = await menusRes.json();
-        if (menusData.success && menusData.data && menusData.data.length > 0) {
-          const week3Menu = menusData.data.find(
-            (m: any) => m.weekNumber === 3 && m.schoolName?.includes('Trưng Vương')
-          );
-          if (week3Menu) {
-            setMenuData({
-              ...week3Menu,
-              startDate: normalizeDateValue(week3Menu.startDate),
-              endDate: normalizeDateValue(week3Menu.endDate),
-            });
-          }
-        }
-
         // Nếu có query param ?school=... từ trang quản lý trường
         if (typeof window !== 'undefined') {
           const urlParams = new URLSearchParams(window.location.search);
@@ -193,34 +148,11 @@ export default function HomePage() {
     }
   };
 
-  // Nạp lại thực đơn mẫu Tuần 3
-  const handleLoadSampleWeek3 = () => {
-    setMenuData({
-      ...SAMPLE_WEEK_3_DATA,
-      _id: menuData._id,
-    });
-    showToast('Đã nạp lại thực đơn mẫu Tuần 3', 'info');
-  };
-
   // Tạo thực đơn mới
   const handleNewMenu = () => {
-    const nextWeek = typeof menuData.weekNumber === 'number' ? menuData.weekNumber + 1 : 4;
-    setMenuData({
-      schoolName: menuData.schoolName || 'Trường Tiểu học Trưng Vương',
-      weekNumber: nextWeek,
-      startDate: '',
-      endDate: '',
-      days: [
-        {
-          dayOfWeek: '2',
-          dateDisplay: 'Ngày ...',
-          dateValue: '',
-          mainMeals: ['Cơm trắng'],
-          sideMeals: ['Sữa'],
-        },
-      ],
-    });
-    showToast(`Đã tạo bản nháp mới cho Tuần ${nextWeek}`, 'info');
+    setMenuData(createEmptyMenu());
+    setActiveTab('menu');
+    showToast('Đã tạo thực đơn mới', 'info');
   };
 
   // Tải một thực đơn từ danh sách đã lưu
@@ -255,8 +187,6 @@ export default function HomePage() {
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onNewMenu={handleNewMenu}
-        onLoadSampleWeek3={handleLoadSampleWeek3}
         dbStatus={dbStatus}
       />
 
@@ -308,6 +238,27 @@ export default function HomePage() {
 
               {/* 3 Nút Thao Tác Bên Phải Header (Lưu, Tải PNG, Tải PDF) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handleNewMenu}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    border: '1px solid #cbd5e1',
+                    padding: '14px 18px',
+                    borderRadius: '8px',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Plus size={16} color="#475569" />
+                  <span>Tạo thực đơn mới</span>
+                </button>
+
                 {/* Lưu thực đơn */}
                 <button
                   type="button"

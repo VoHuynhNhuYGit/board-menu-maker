@@ -8,23 +8,17 @@ import {
   Soup,
   School,
   Database,
-  PlusCircle,
-  RotateCcw,
 } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: 'menu' | 'saved' | 'schools' | 'dishes';
   onTabChange: (tab: 'menu' | 'saved' | 'schools' | 'dishes') => void;
-  onNewMenu?: () => void;
-  onLoadSampleWeek3?: () => void;
   dbStatus: 'connected' | 'connecting' | 'error';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onTabChange,
-  onNewMenu,
-  onLoadSampleWeek3,
   dbStatus,
 }) => {
   return (
@@ -226,7 +220,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Quick utility controls at bottom of sidebar */}
+      {/* Trạng thái kết nối */}
       <div
         style={{
           display: 'flex',
@@ -236,57 +230,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           borderTop: '1px solid rgba(255,255,255,0.15)',
         }}
       >
-        {onNewMenu && (
-          <button
-            type="button"
-            onClick={onNewMenu}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(255,255,255,0.12)',
-              color: '#ffffff',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              border: 'none',
-              width: '100%',
-            }}
-            title="Tạo thực đơn nháp mới"
-          >
-            <PlusCircle size={15} />
-            <span>+ Tạo thực đơn mới</span>
-          </button>
-        )}
-
-        {onLoadSampleWeek3 && (
-          <button
-            type="button"
-            onClick={onLoadSampleWeek3}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'transparent',
-              color: 'rgba(255,255,255,0.85)',
-              padding: '7px 12px',
-              borderRadius: '6px',
-              fontSize: '0.78rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              border: 'none',
-              width: '100%',
-            }}
-            title="Nạp lại dữ liệu mẫu Tuần 3"
-          >
-            <RotateCcw size={14} />
-            <span>Nạp mẫu Tuần 3</span>
-          </button>
-        )}
-
-        {/* MongoDB Status badge */}
         <div
           style={{
             display: 'flex',
