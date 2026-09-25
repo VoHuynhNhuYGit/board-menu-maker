@@ -26,8 +26,14 @@ export const MealDishesList: React.FC<MealDishesListProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Lọc món theo từ khóa tìm kiếm
-  const filteredDishes = availableDishes
+  // Lọc món theo loại bữa trước, sau đó mới lọc theo từ khóa tìm kiếm.
+  // Bữa phụ chỉ được chọn các món đã phân loại là "Bữa phụ";
+  // Bữa chính không hiển thị các món thuộc nhóm này.
+  const isSideMeal = label.trim().toLowerCase() === 'bữa phụ';
+  const mealDishes = availableDishes.filter((dish) =>
+    isSideMeal ? dish.category === 'Bữa phụ' : dish.category !== 'Bữa phụ'
+  );
+  const filteredDishes = mealDishes
     .filter((dish) => {
       if (!inputValue.trim()) return true;
       return matchVietnamese(dish.name, inputValue);
@@ -76,7 +82,7 @@ export const MealDishesList: React.FC<MealDishesListProps> = ({
       e.preventDefault();
       if (isOpen && highlightedIndex >= 0 && highlightedIndex < filteredDishes.length) {
         handleAddDish(filteredDishes[highlightedIndex].name);
-      } else if (inputValue.trim()) {
+      } else if (inputValue.trim() && !isSideMeal) {
         handleAddDish(inputValue);
       }
     } else if (e.key === 'Escape') {
@@ -248,49 +254,53 @@ export const MealDishesList: React.FC<MealDishesListProps> = ({
                   color: '#94a3b8',
                 }}
               >
-                Không có món nào trong kho.
+                {isSideMeal
+                  ? 'Không có món bữa phụ phù hợp trong kho.'
+                  : 'Không có món nào trong kho.'}
               </div>
             )}
 
-            {/* Mục thêm món mới */}
-            <div
-              onClick={() => handleAddDish(inputValue.trim() || 'Món mới')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '7px 10px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                color: '#0284c7',
-                borderTop: '1px solid #f1f5f9',
-                marginTop: '2px',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f9ff')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-            >
+            {!isSideMeal && (
+              /* Mục thêm món mới */
               <div
+                onClick={() => handleAddDish(inputValue.trim() || 'Món mới')}
                 style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  background: '#0284c7',
-                  color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '7px 10px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  color: '#0284c7',
+                  borderTop: '1px solid #f1f5f9',
+                  marginTop: '2px',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#f0f9ff')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                <Plus size={12} strokeWidth={2.5} />
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: '#0284c7',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Plus size={12} strokeWidth={2.5} />
+                </div>
+                <span>
+                  {inputValue.trim()
+                    ? `Thêm món mới: "${inputValue.trim()}"`
+                    : 'Thêm món mới'}
+                </span>
               </div>
-              <span>
-                {inputValue.trim()
-                  ? `Thêm món mới: "${inputValue.trim()}"`
-                  : 'Thêm món mới'}
-              </span>
-            </div>
+            )}
           </div>
         )}
       </div>

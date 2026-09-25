@@ -83,11 +83,67 @@ export const MenuForm: React.FC<MenuFormProps> = ({
     schoolSearch.trim() ? matchVietnamese(s.name, schoolSearch) : true
   );
 
+  const parseDateValue = (value: string) => {
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return null;
+    const [, year, month, day] = match;
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+
+  const formatDateValue = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const getDayOfWeekLabel = (date: Date) => {
+    const day = date.getDay();
+    return day === 0 ? 'CN' : String(day + 1);
+  };
+
+  const buildDaysFromDateRange = (startValue: string, endValue: string, currentDays: IDayPlan[]) => {
+    if (!startValue || !endValue) return null;
+
+    const start = parseDateValue(startValue);
+    const end = parseDateValue(endValue);
+    if (!start || !end) return null;
+    if (start > end) return [];
+
+    const days: IDayPlan[] = [];
+    const cursor = new Date(start);
+    let index = 0;
+
+    while (cursor <= end && index < 7) {
+      const existingDay = currentDays[index];
+      days.push({
+        dayOfWeek: getDayOfWeekLabel(cursor),
+        dateDisplay: `Ngày ${cursor.getDate()}/${cursor.getMonth() + 1}`,
+        dateValue: formatDateValue(cursor),
+        mainMeals: existingDay?.mainMeals || [],
+        sideMeals: existingDay?.sideMeals || [],
+      });
+      cursor.setDate(cursor.getDate() + 1);
+      index += 1;
+    }
+
+    return days;
+  };
+
   const handleFieldChange = (field: keyof IMenuData, value: any) => {
     setMenuData((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleDateRangeChange = (field: 'startDate' | 'endDate', value: string) => {
+    setMenuData((prev) => {
+      const next = { ...prev, [field]: value };
+      const days = buildDaysFromDateRange(next.startDate, next.endDate, prev.days);
+      return days === null ? next : { ...next, days };
+    });
   };
 
   const handleDayChange = (index: number, updatedDay: IDayPlan) => {
@@ -136,31 +192,6 @@ export const MenuForm: React.FC<MenuFormProps> = ({
       const newDays = menuData.days.filter((_, i) => i !== index);
       setMenuData((prev) => ({ ...prev, days: newDays }));
     }
-  };
-
-  // Định dạng ngày hiển thị dd/mm/yyyy
-  const formatDateDisplay = (dateStr: string) => {
-    if (!dateStr) return '';
-    try {
-      const parts = dateStr.split('-');
-      if (parts.length === 3) {
-        return `${parseInt(parts[2], 10)}/${parseInt(parts[1], 10)}/${parts[0]}`;
-      }
-      const slashParts = dateStr.split(/[/-]/);
-      if (slashParts.length === 3) {
-        return `${parseInt(slashParts[0], 10)}/${parseInt(slashParts[1], 10)}/${slashParts[2]}`;
-      }
-    } catch (e) {
-      // fallback
-    }
-    return dateStr;
-  };
-
-  const normalizeTypedDate = (value: string) => {
-    const parts = value.trim().split(/[/-]/);
-    if (parts.length !== 3 || parts[2].length !== 4) return value;
-    const [day, month, year] = parts;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   };
 
   return (
@@ -406,7 +437,7 @@ export const MenuForm: React.FC<MenuFormProps> = ({
             <input
               type="number"
               value={menuData.weekNumber}
-              onChange={(e) => handleFieldChange('weekNumber', parseInt(e.target.value, 10) || 1)}
+              onChange={(e) => handleFieldChange('weekNumber', e.target.value ? parseInt(e.target.value, 10) : '')}
               min={1}
               max={54}
               style={{
@@ -449,10 +480,9 @@ export const MenuForm: React.FC<MenuFormProps> = ({
             >
               <Calendar size={15} color="#64748b" />
               <input
-                type="text"
-                value={formatDateDisplay(menuData.startDate)}
-                placeholder="dd/mm/yyyy"
-                onChange={(e) => handleFieldChange('startDate', normalizeTypedDate(e.target.value))}
+                type="date"
+                value={menuData.startDate}
+                onChange={(e) => handleDateRangeChange('startDate', e.target.value)}
                 style={{
                   border: 'none',
                   outline: 'none',
@@ -492,10 +522,9 @@ export const MenuForm: React.FC<MenuFormProps> = ({
             >
               <Calendar size={15} color="#64748b" />
               <input
-                type="text"
-                value={formatDateDisplay(menuData.endDate)}
-                placeholder="dd/mm/yyyy"
-                onChange={(e) => handleFieldChange('endDate', normalizeTypedDate(e.target.value))}
+                type="date"
+                value={menuData.endDate}
+                onChange={(e) => handleDateRangeChange('endDate', e.target.value)}
                 style={{
                   border: 'none',
                   outline: 'none',
