@@ -13,9 +13,8 @@ import {
 } from 'lucide-react';
 
 interface SidebarProps {
-  activeTab: 'menu' | 'schools' | 'dishes';
-  onTabChange: (tab: 'menu' | 'schools' | 'dishes') => void;
-  onOpenSavedMenus: () => void;
+  activeTab: 'menu' | 'saved' | 'schools' | 'dishes';
+  onTabChange: (tab: 'menu' | 'saved' | 'schools' | 'dishes') => void;
   onNewMenu?: () => void;
   onLoadSampleWeek3?: () => void;
   dbStatus: 'connected' | 'connecting' | 'error';
@@ -24,7 +23,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onTabChange,
-  onOpenSavedMenus,
   onNewMenu,
   onLoadSampleWeek3,
   dbStatus,
@@ -133,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Thực đơn đã lưu */}
           <button
             type="button"
-            onClick={onOpenSavedMenus}
+            onClick={() => onTabChange('saved')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -141,18 +139,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
               padding: '14px 20px',
               borderRadius: '0',
               border: 'none',
-              borderLeft: '3px solid transparent',
-              background: 'transparent',
+              borderLeft: activeTab === 'saved' ? '3px solid #ffd21f' : '3px solid transparent',
+              background: activeTab === 'saved' ? 'rgba(24, 144, 255, 0.9)' : 'transparent',
               color: '#ffffff',
               fontSize: '0.92rem',
-              fontWeight: 500,
+              fontWeight: activeTab === 'saved' ? 700 : 500,
               cursor: 'pointer',
               textAlign: 'left',
               width: '100%',
               transition: 'background 0.15s ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'saved') e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'saved') e.currentTarget.style.background = 'transparent';
+            }}
           >
             <Folder size={22} strokeWidth={1.9} />
             <span>Thực đơn đã lưu</span>
@@ -301,7 +303,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }}
         >
           <Database size={12} color={dbStatus === 'connected' ? '#4ade80' : '#f87171'} />
-          <span>{dbStatus === 'connected' ? 'MongoDB Đã kết nối' : 'Đang kết nối MongoDB...'}</span>
+          <span>{dbStatus === 'connected' ? 'Đã kết nối' : 'Đang kết nối...'}</span>
         </div>
       </div>
     </aside>

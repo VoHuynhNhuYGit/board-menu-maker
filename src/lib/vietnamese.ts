@@ -26,7 +26,8 @@ export function removeVietnameseTones(str: string): string {
  * Kiểm tra xem từ khóa tìm kiếm (có thể không dấu) có khớp với chuỗi đích hay không
  */
 export function matchVietnamese(target: string, query: string): boolean {
-  if (!target || !query) return false;
+  if (!target) return false;
+  if (!query) return true;
   const normTarget = removeVietnameseTones(target);
   const normQuery = removeVietnameseTones(query);
   return normTarget.includes(normQuery);

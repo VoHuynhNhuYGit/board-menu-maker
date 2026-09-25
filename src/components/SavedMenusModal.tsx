@@ -6,6 +6,7 @@ import { X, Calendar, Building, Hash, Copy, Edit3, Trash2, FolderOpen, RefreshCw
 
 interface SavedMenusModalProps {
   isOpen: boolean;
+  embedded?: boolean;
   onClose: () => void;
   onLoadMenu: (menu: IMenuData, isClone?: boolean) => void;
   showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
@@ -13,6 +14,7 @@ interface SavedMenusModalProps {
 
 export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
   isOpen,
+  embedded = false,
   onClose,
   onLoadMenu,
   showToast,
@@ -52,6 +54,13 @@ export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
       : true
   );
 
+  const formatDate = (value?: string) => {
+    if (!value) return '—';
+    const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (iso) return `${Number(iso[3])}/${Number(iso[2])}/${iso[1]}`;
+    return value;
+  };
+
   const handleDeleteMenu = async (id: string, schoolName: string, week: any) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa thực đơn ${schoolName} - Tuần ${week}?`)) {
       return;
@@ -71,13 +80,17 @@ export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
     }
   };
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content"
-        onClick={(e) => e.stopPropagation()}
-        style={{ width: '740px' }}
-      >
+  const content = (
+    <div
+      className="modal-content"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: '100%',
+        maxWidth: embedded ? 'none' : '740px',
+        maxHeight: embedded ? 'none' : '90vh',
+        borderRadius: embedded ? '10px' : undefined,
+      }}
+    >
         {/* Header Modal */}
         <div
           style={{
@@ -91,7 +104,7 @@ export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FolderOpen size={20} color="#2563eb" />
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
-              Danh sách thực đơn đã lưu (MongoDB)
+              Danh sách thực đơn đã lưu
             </h3>
             <span
               style={{
@@ -161,12 +174,12 @@ export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            maxHeight: '440px',
+            maxHeight: embedded ? 'calc(100vh - 260px)' : '440px',
           }}
         >
           {loading ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
-              Đang tải danh sách từ MongoDB...
+              Đang tải danh sách...
             </div>
           ) : filteredMenus.length > 0 ? (
             filteredMenus.map((m) => (
@@ -206,7 +219,7 @@ export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#64748b', fontSize: '0.82rem' }}>
                     <span>
-                      Từ <strong>{m.startDate}</strong> đến <strong>{m.endDate}</strong>
+                      Từ <strong>{formatDate(m.startDate)}</strong> đến <strong>{formatDate(m.endDate)}</strong>
                     </span>
                     <span>•</span>
                     <span>{m.days?.length || 0} ngày</span>
@@ -305,7 +318,7 @@ export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
             ))
           ) : (
             <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontSize: '0.9rem' }}>
-              Chưa có thực đơn nào được lưu trong cơ sở dữ liệu MongoDB.
+              Chưa có thực đơn nào được lưu.
             </div>
           )}
         </div>
@@ -336,6 +349,15 @@ export const SavedMenusModal: React.FC<SavedMenusModalProps> = ({
           </button>
         </div>
       </div>
+  );
+
+  return embedded ? (
+    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', animation: 'fadeIn 0.2s ease-out' }}>
+      {content}
+    </div>
+  ) : (
+    <div className="modal-overlay" onClick={onClose}>
+      {content}
     </div>
   );
 };

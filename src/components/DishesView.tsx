@@ -177,7 +177,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
 
       const data = await res.json();
       if (data.success) {
-        showToast(`Đã thêm món "${trimmed}" vào MongoDB!`, 'success');
+        showToast(`Đã thêm món "${trimmed}"!`, 'success');
         setDishName('');
         setShowAutocomplete(false);
         await fetchDishes();
@@ -226,7 +226,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa món "${name}" khỏi MongoDB?`)) {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa món "${name}" khỏi kho món ăn?`)) {
       return;
     }
 
@@ -288,7 +288,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
               Quản lý Kho Món Ăn Trường Học
             </h2>
             <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0 }}>
-              Lưu trữ NoSQL MongoDB • Gợi ý Autocomplete thông minh khi gõ tay
+              Quản lý món ăn • Gợi ý nhanh khi gõ tên món
             </p>
           </div>
         </div>
@@ -480,7 +480,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
               }}
             >
               <Plus size={16} />
-              <span>{isSubmitting ? 'Đang lưu MongoDB...' : 'Thêm món vào MongoDB'}</span>
+              <span>{isSubmitting ? 'Đang lưu...' : 'Thêm món'}</span>
             </button>
           </form>
         </div>
@@ -564,7 +564,7 @@ export const DishesView: React.FC<DishesViewProps> = ({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '550px', overflowY: 'auto' }}>
             {loading ? (
-              <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>Đang tải danh sách món ăn từ MongoDB...</div>
+              <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>Đang tải danh sách món ăn...</div>
             ) : filteredDishes.length > 0 ? (
               filteredDishes.map((dish) => {
                 const isEditing = editingId === dish._id;

@@ -55,7 +55,7 @@ export const DishManagerModal: React.FC<DishManagerModalProps> = ({
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`Đã thêm món "${trimmed}" vào MongoDB`, 'success');
+        showToast(`Đã thêm món "${trimmed}"`, 'success');
         setNewName('');
         await onRefreshDishes();
       } else {
@@ -144,7 +144,7 @@ export const DishManagerModal: React.FC<DishManagerModalProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Utensils size={20} color="#2563eb" />
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
-              Quản lý kho món ăn (MongoDB)
+              Quản lý kho món ăn
             </h3>
             <span
               style={{

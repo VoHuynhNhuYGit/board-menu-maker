@@ -72,7 +72,7 @@ interface ToastMessage {
 }
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<'menu' | 'schools' | 'dishes'>('menu');
+  const [activeTab, setActiveTab] = useState<'menu' | 'saved' | 'schools' | 'dishes'>('menu');
   const [menuData, setMenuData] = useState<IMenuData>(SAMPLE_WEEK_3_DATA);
   const [availableDishes, setAvailableDishes] = useState<IDishItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -83,7 +83,6 @@ export default function HomePage() {
 
   // Modals state
   const [isDishManagerOpen, setIsDishManagerOpen] = useState(false);
-  const [isSavedMenusOpen, setIsSavedMenusOpen] = useState(false);
 
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -178,8 +177,8 @@ export default function HomePage() {
         setMenuData(result.data);
         showToast(
           isUpdating
-            ? 'Đã cập nhật thực đơn thành công trên MongoDB!'
-            : 'Đã lưu thực đơn mới thành công vào MongoDB!',
+            ? 'Đã cập nhật thực đơn thành công!'
+            : 'Đã lưu thực đơn mới thành công!',
           'success'
         );
         await fetchDishes();
@@ -188,7 +187,7 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error('Lỗi khi lưu thực đơn:', err);
-      showToast('Không thể kết nối đến máy chủ MongoDB', 'error');
+      showToast('Không thể kết nối đến máy chủ', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -256,7 +255,6 @@ export default function HomePage() {
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onOpenSavedMenus={() => setIsSavedMenusOpen(true)}
         onNewMenu={handleNewMenu}
         onLoadSampleWeek3={handleLoadSampleWeek3}
         dbStatus={dbStatus}
@@ -418,6 +416,17 @@ export default function HomePage() {
           />
         )}
 
+        {/* TAB THỰC ĐƠN ĐÃ LƯU */}
+        {activeTab === 'saved' && (
+          <SavedMenusModal
+            isOpen
+            embedded
+            onClose={() => setActiveTab('menu')}
+            onLoadMenu={handleLoadMenu}
+            showToast={showToast}
+          />
+        )}
+
         {/* TAB KHO MÓN ĂN */}
         {activeTab === 'dishes' && (
           <DishesView
@@ -434,16 +443,6 @@ export default function HomePage() {
           onClose={() => setIsDishManagerOpen(false)}
           dishes={availableDishes}
           onRefreshDishes={fetchDishes}
-          showToast={showToast}
-        />
-      )}
-
-      {/* Modal Danh sách thực đơn đã lưu */}
-      {isSavedMenusOpen && (
-        <SavedMenusModal
-          isOpen={isSavedMenusOpen}
-          onClose={() => setIsSavedMenusOpen(false)}
-          onLoadMenu={handleLoadMenu}
           showToast={showToast}
         />
       )}

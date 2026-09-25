@@ -239,7 +239,7 @@ export const MenuForm: React.FC<MenuFormProps> = ({
                   whiteSpace: 'nowrap',
                 }}
               >
-                {menuData.schoolName || '-- Chọn trường trong MongoDB --'}
+                {menuData.schoolName || '-- Chọn trường --'}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 {menuData.schoolName && (
@@ -302,7 +302,7 @@ export const MenuForm: React.FC<MenuFormProps> = ({
                     type="text"
                     value={schoolSearch}
                     onChange={(e) => setSchoolSearch(e.target.value)}
-                    placeholder="Gõ tìm trường trong MongoDB..."
+                    placeholder="Gõ tìm trường..."
                     onClick={(e) => e.stopPropagation()}
                     autoFocus
                     style={{

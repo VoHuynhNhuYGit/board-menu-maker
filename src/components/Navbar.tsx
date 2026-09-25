@@ -111,7 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
               >
                 <Database size={11} />
-                <span>{dbStatus === 'connected' ? 'MongoDB OK' : 'Đang kết nối...'}</span>
+                <span>{dbStatus === 'connected' ? 'Đã kết nối' : 'Đang kết nối...'}</span>
               </div>
             </div>
             <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
@@ -322,7 +322,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
           >
             <Save size={16} />
-            <span>{isSaving ? 'Đang lưu MongoDB...' : 'Lưu thực đơn'}</span>
+            <span>{isSaving ? 'Đang lưu...' : 'Lưu thực đơn'}</span>
           </button>
         </div>
       </div>

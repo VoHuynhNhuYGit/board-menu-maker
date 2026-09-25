@@ -142,7 +142,7 @@ export const SchoolsView: React.FC<SchoolsViewProps> = ({
   };
 
   const handleDelete = async (id: string, schoolName: string) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa trường "${schoolName}" khỏi MongoDB?`)) {
+    if (!window.confirm(`Bạn có chắc muốn xóa trường "${schoolName}" khỏi danh sách?`)) {
       return;
     }
 
@@ -200,7 +200,7 @@ export const SchoolsView: React.FC<SchoolsViewProps> = ({
               Quản lý Danh Sách Trường Học
             </h2>
             <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0 }}>
-              Dữ liệu NoSQL MongoDB • Tự động gợi ý tên trường khi tạo thực đơn
+              Quản lý danh sách và thông tin trường học
             </p>
           </div>
         </div>
@@ -337,7 +337,7 @@ export const SchoolsView: React.FC<SchoolsViewProps> = ({
               }}
             >
               <Plus size={16} />
-              <span>{isSubmitting ? 'Đang lưu vào MongoDB...' : 'Lưu trường vào MongoDB'}</span>
+              <span>{isSubmitting ? 'Đang lưu...' : 'Lưu trường'}</span>
             </button>
           </form>
         </div>
@@ -397,7 +397,7 @@ export const SchoolsView: React.FC<SchoolsViewProps> = ({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '550px', overflowY: 'auto' }}>
             {loading ? (
-              <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>Đang tải danh sách từ MongoDB...</div>
+              <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>Đang tải danh sách...</div>
             ) : filteredSchools.length > 0 ? (
               filteredSchools.map((s) => {
                 const isEditing = editingId === s._id;
