@@ -209,7 +209,7 @@ export const MealDishesList: React.FC<MealDishesListProps> = ({
               border: '1px solid #cbd5e1',
               borderRadius: '8px',
               boxShadow: '0 10px 20px -3px rgba(0,0,0,0.12)',
-              zIndex: 100,
+              zIndex: 1000,
               maxHeight: '220px',
               overflowY: 'auto',
               padding: '4px',

@@ -538,10 +538,12 @@ export const MenuForm: React.FC<MenuFormProps> = ({
                   background: '#ffffff',
                   borderRadius: '10px',
                   border: isExpanded ? '1.5px solid #f59e0b' : '1px solid #e2e8f0',
+                  position: 'relative',
+                  zIndex: isExpanded ? menuData.days.length - idx : 0,
                   boxShadow: isExpanded
                     ? '0 2px 8px rgba(245, 158, 11, 0.08)'
                     : '0 1px 2px rgba(0,0,0,0.03)',
-                  overflow: 'hidden',
+                  overflow: isExpanded ? 'visible' : 'hidden',
                   transition: 'border-color 0.2s',
                 }}
               >
