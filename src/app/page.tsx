@@ -1,22 +1,29 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IMenuData, IDishItem } from '@/types';
-import { Navbar } from '@/components/Navbar';
+import { Sidebar } from '@/components/Sidebar';
 import { MenuForm } from '@/components/MenuForm';
-import { MenuPreview } from '@/components/MenuPreview';
+import { MenuPreview, MenuPreviewHandle } from '@/components/MenuPreview';
 import { DishManagerModal } from '@/components/DishManagerModal';
 import { SavedMenusModal } from '@/components/SavedMenusModal';
 import { SchoolsView } from '@/components/SchoolsView';
 import { DishesView } from '@/components/DishesView';
-import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import {
+  Save,
+  Image as ImageIcon,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+} from 'lucide-react';
 
 // Dữ liệu mẫu khởi tạo chuẩn theo file tuan-3.docx
 const SAMPLE_WEEK_3_DATA: IMenuData = {
   schoolName: 'Trường Tiểu học Trưng Vương',
   weekNumber: 3,
-  startDate: '28/9/2026',
-  endDate: '1/10/2026',
+  startDate: '2026-09-28',
+  endDate: '2026-10-01',
   days: [
     {
       dayOfWeek: '2',
@@ -29,7 +36,7 @@ const SAMPLE_WEEK_3_DATA: IMenuData = {
       dayOfWeek: '3',
       dateDisplay: 'Ngày 29/9',
       dateValue: '2026-09-29',
-      mainMeals: ['Nạc dăm kho đậu hủ', 'Canh cải ngọt thịt băm', 'Bông cải cà rốt xào', 'Cơm trắng'],
+      mainMeals: ['Nạc dăm kho đậu hũ', 'Canh cải ngọt thịt bằm', 'Bông cải cà rốt xào', 'Cơm trắng'],
       sideMeals: ['Sữa'],
     },
     {
@@ -49,6 +56,15 @@ const SAMPLE_WEEK_3_DATA: IMenuData = {
   ],
 };
 
+const normalizeDateValue = (value?: string) => {
+  if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const match = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (!match) return value;
+  const [, day, month, year] = match;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
 interface ToastMessage {
   id: string;
   text: string;
@@ -61,6 +77,9 @@ export default function HomePage() {
   const [availableDishes, setAvailableDishes] = useState<IDishItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [dbStatus, setDbStatus] = useState<'connected' | 'connecting' | 'error'>('connecting');
+
+  // Ref đến MenuPreview để xuất file ảnh PNG & PDF
+  const previewRef = useRef<MenuPreviewHandle>(null);
 
   // Modals state
   const [isDishManagerOpen, setIsDishManagerOpen] = useState(false);
@@ -103,12 +122,15 @@ export default function HomePage() {
         const menusRes = await fetch('/api/menus');
         const menusData = await menusRes.json();
         if (menusData.success && menusData.data && menusData.data.length > 0) {
-          // Gắn ID của bản ghi mẫu tuần 3 nếu tìm thấy
           const week3Menu = menusData.data.find(
-            (m: any) => m.weekNumber === 3 && m.schoolName.includes('Trưng Vương')
+            (m: any) => m.weekNumber === 3 && m.schoolName?.includes('Trưng Vương')
           );
           if (week3Menu) {
-            setMenuData(week3Menu);
+            setMenuData({
+              ...week3Menu,
+              startDate: normalizeDateValue(week3Menu.startDate),
+              endDate: normalizeDateValue(week3Menu.endDate),
+            });
           }
         }
 
@@ -128,18 +150,14 @@ export default function HomePage() {
     initData();
   }, []);
 
-  // Xử lý Lưu thực đơn vào MongoDB
+  // Lưu thực đơn vào MongoDB
   const handleSaveMenu = async () => {
-    if (!menuData.schoolName.trim()) {
-      showToast('Vui lòng nhập tên trường học', 'error');
+    if (!menuData.schoolName) {
+      showToast('Vui lòng chọn hoặc nhập tên trường học', 'error');
       return;
     }
     if (!menuData.weekNumber) {
       showToast('Vui lòng nhập số tuần', 'error');
-      return;
-    }
-    if (!menuData.startDate || !menuData.endDate) {
-      showToast('Vui lòng nhập khoảng ngày bắt đầu và kết thúc', 'error');
       return;
     }
 
@@ -164,7 +182,6 @@ export default function HomePage() {
             : 'Đã lưu thực đơn mới thành công vào MongoDB!',
           'success'
         );
-        // Tải lại kho món ăn vì các món mới đã được tự động lưu
         await fetchDishes();
       } else {
         showToast(result.error || 'Lỗi khi lưu thực đơn', 'error');
@@ -181,12 +198,12 @@ export default function HomePage() {
   const handleLoadSampleWeek3 = () => {
     setMenuData({
       ...SAMPLE_WEEK_3_DATA,
-      _id: menuData._id, // Giữ ID nếu đang chỉnh sửa
+      _id: menuData._id,
     });
     showToast('Đã nạp lại thực đơn mẫu Tuần 3', 'info');
   };
 
-  // Tạo thực đơn mới (trắng / nháp)
+  // Tạo thực đơn mới
   const handleNewMenu = () => {
     const nextWeek = typeof menuData.weekNumber === 'number' ? menuData.weekNumber + 1 : 4;
     setMenuData({
@@ -209,20 +226,24 @@ export default function HomePage() {
 
   // Tải một thực đơn từ danh sách đã lưu
   const handleLoadMenu = (loadedMenu: IMenuData, isClone = false) => {
+    const normalizedMenu = {
+      ...loadedMenu,
+      startDate: normalizeDateValue(loadedMenu.startDate),
+      endDate: normalizeDateValue(loadedMenu.endDate),
+    };
     if (isClone) {
-      // Nhân bản: tăng tuần lên 1 và xóa _id để tạo bản ghi mới khi bấm Lưu
-      const currentWeekNum = Number(loadedMenu.weekNumber) || 1;
+      const currentWeekNum = Number(normalizedMenu.weekNumber) || 1;
       setMenuData({
-        ...loadedMenu,
+        ...normalizedMenu,
         _id: undefined,
         weekNumber: currentWeekNum + 1,
       });
     } else {
-      setMenuData(loadedMenu);
+      setMenuData(normalizedMenu);
     }
   };
 
-  // Chọn trường từ tab Trường học để lập thực đơn ngay lập tức
+  // Chọn trường từ tab Trường học để lập thực đơn
   const handleSelectSchoolForMenu = (schoolName: string) => {
     setMenuData((prev) => ({ ...prev, schoolName }));
     setActiveTab('menu');
@@ -230,58 +251,166 @@ export default function HomePage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Thanh điều hướng */}
-      <Navbar
-        currentMenu={menuData}
-        onNewMenu={handleNewMenu}
-        onLoadSampleWeek3={handleLoadSampleWeek3}
-        onOpenDishManager={() => setIsDishManagerOpen(true)}
-        onOpenSavedMenus={() => setIsSavedMenusOpen(true)}
-        onSaveMenu={handleSaveMenu}
-        isSaving={isSaving}
-        dbStatus={dbStatus}
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+      {/* 1. SIDEBAR BÊN TRÁI (Chuẩn giao diện trong ảnh) */}
+      <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        onOpenSavedMenus={() => setIsSavedMenusOpen(true)}
+        onNewMenu={handleNewMenu}
+        onLoadSampleWeek3={handleLoadSampleWeek3}
+        dbStatus={dbStatus}
       />
 
-      {/* Khu vực nội dung hiển thị theo tab (Chuyển đổi tức thì 0ms, không load lại trang) */}
-      <main
+      {/* 2. KHU VỰC NỘI DUNG CHÍNH */}
+      <div
         style={{
-          maxWidth: '1600px',
-          width: '100%',
-          margin: '0 auto',
-          padding: '24px 20px',
           flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          padding: '24px 20px 32px',
         }}
       >
         {activeTab === 'menu' && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
-              gap: '24px',
-              alignItems: 'start',
-              animation: 'fadeIn 0.2s ease-out',
-            }}
-          >
-            {/* CỘT TRÁI: BIỂU MẪU NHẬP LIỆU */}
-            <section aria-label="Biểu mẫu thực đơn">
-              <MenuForm
-                menuData={menuData}
-                setMenuData={setMenuData}
-                availableDishes={availableDishes}
-                onNavigateToSchools={() => setActiveTab('schools')}
-              />
-            </section>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
+            {/* TOP HEADER THANH TIÊU ĐỀ VÀ CÁC NÚT THAO TÁC */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '16px',
+                padding: '0 12px',
+              }}
+            >
+              <div>
+                <h1
+                  style={{
+                    fontSize: '1.7rem',
+                    fontWeight: 800,
+                    color: '#0f172a',
+                    letterSpacing: '-0.4px',
+                    margin: 0,
+                  }}
+                >
+                  Tạo thực đơn tuần
+                </h1>
+                <p
+                  style={{
+                    fontSize: '0.88rem',
+                    color: '#64748b',
+                    marginTop: '4px',
+                  }}
+                >
+                  Nhập thông tin và chọn món ăn cho từng ngày. Bạn có thể xem trước và xuất thực đơn ở bên phải.
+                </p>
+              </div>
 
-            {/* CỘT PHẢI: ẢNH XEM TRƯỚC VÀ XUẤT FILE */}
-            <section aria-label="Xem trước thực đơn và xuất file">
-              <MenuPreview menuData={menuData} />
-            </section>
+              {/* 3 Nút Thao Tác Bên Phải Header (Lưu, Tải PNG, Tải PDF) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {/* Lưu thực đơn */}
+                <button
+                  type="button"
+                  onClick={handleSaveMenu}
+                  disabled={isSaving}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#096dd9',
+                    color: '#ffffff',
+                    padding: '14px 18px',
+                    borderRadius: '8px',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 6px rgba(9, 109, 217, 0.25)',
+                    cursor: 'pointer',
+                    opacity: isSaving ? 0.7 : 1,
+                  }}
+                >
+                  <Save size={16} />
+                  <span>{isSaving ? 'Đang lưu...' : 'Lưu thực đơn'}</span>
+                </button>
+
+                {/* Tải ảnh PNG */}
+                <button
+                  type="button"
+                  onClick={() => previewRef.current?.exportPNG()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    border: '1px solid #cbd5e1',
+                    padding: '14px 18px',
+                    borderRadius: '8px',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                  }}
+                >
+                  <ImageIcon size={16} color="#475569" />
+                  <span>Tải ảnh PNG</span>
+                </button>
+
+                {/* Tải PDF */}
+                <button
+                  type="button"
+                  onClick={() => previewRef.current?.exportPDF()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    border: '1px solid #cbd5e1',
+                    padding: '14px 18px',
+                    borderRadius: '8px',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                  }}
+                >
+                  <FileText size={16} color="#475569" />
+                  <span>Tải PDF</span>
+                </button>
+              </div>
+            </div>
+
+            {/* BỐ CỤC 2 CỘT: CỘT TRÁI (FORM) VÀ CỘT PHẢI (XEM TRƯỚC) */}
+            <div
+              className="menu-workspace-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0, 1.38fr) minmax(0, 1fr)',
+                gap: '14px',
+                alignItems: 'start',
+              }}
+            >
+              {/* Cột trái: Nhập thông tin & món ăn */}
+              <section aria-label="Biểu mẫu thực đơn">
+                <MenuForm
+                  menuData={menuData}
+                  setMenuData={setMenuData}
+                  availableDishes={availableDishes}
+                  onNavigateToSchools={() => setActiveTab('schools')}
+                />
+              </section>
+
+              {/* Cột phải: Xem trước bảng thực đơn */}
+              <section aria-label="Xem trước thực đơn">
+                <MenuPreview ref={previewRef} menuData={menuData} />
+              </section>
+            </div>
           </div>
         )}
 
+        {/* TAB TRƯỜNG HỌC */}
         {activeTab === 'schools' && (
           <SchoolsView
             onSelectSchoolForMenu={handleSelectSchoolForMenu}
@@ -289,44 +418,40 @@ export default function HomePage() {
           />
         )}
 
+        {/* TAB KHO MÓN ĂN */}
         {activeTab === 'dishes' && (
           <DishesView
             onRefreshParentDishes={fetchDishes}
             showToast={showToast}
           />
         )}
-      </main>
+      </div>
 
       {/* Modal Quản lý kho món ăn */}
-      <DishManagerModal
-        isOpen={isDishManagerOpen}
-        onClose={() => setIsDishManagerOpen(false)}
-        dishes={availableDishes}
-        onRefreshDishes={fetchDishes}
-        showToast={showToast}
-      />
+      {isDishManagerOpen && (
+        <DishManagerModal
+          isOpen={isDishManagerOpen}
+          onClose={() => setIsDishManagerOpen(false)}
+          dishes={availableDishes}
+          onRefreshDishes={fetchDishes}
+          showToast={showToast}
+        />
+      )}
 
       {/* Modal Danh sách thực đơn đã lưu */}
-      <SavedMenusModal
-        isOpen={isSavedMenusOpen}
-        onClose={() => setIsSavedMenusOpen(false)}
-        onLoadMenu={handleLoadMenu}
-        showToast={showToast}
-      />
+      {isSavedMenusOpen && (
+        <SavedMenusModal
+          isOpen={isSavedMenusOpen}
+          onClose={() => setIsSavedMenusOpen(false)}
+          onLoadMenu={handleLoadMenu}
+          showToast={showToast}
+        />
+      )}
 
-      {/* Danh sách thông báo Toast */}
+      {/* Toasts thông báo góc phải */}
       <div className="toast-container">
         {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`toast-item ${
-              toast.type === 'success'
-                ? 'toast-success'
-                : toast.type === 'error'
-                ? 'toast-error'
-                : 'toast-info'
-            }`}
-          >
+          <div key={toast.id} className={`toast-item toast-${toast.type}`}>
             {toast.type === 'success' && <CheckCircle2 size={18} />}
             {toast.type === 'error' && <AlertCircle size={18} />}
             {toast.type === 'info' && <Info size={18} />}
