@@ -25,6 +25,8 @@ interface NavbarProps {
   onSaveMenu: () => void;
   isSaving: boolean;
   dbStatus: 'connected' | 'connecting' | 'error';
+  activeTab?: 'menu' | 'schools' | 'dishes';
+  onTabChange?: (tab: 'menu' | 'schools' | 'dishes') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -36,7 +38,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSaveMenu,
   isSaving,
   dbStatus,
+  activeTab = 'menu',
+  onTabChange,
 }) => {
+  const handleNavClick = (tab: 'menu' | 'schools' | 'dishes', e: React.MouseEvent) => {
+    if (onTabChange) {
+      e.preventDefault();
+      onTabChange(tab);
+    }
+  };
   return (
     <header
       style={{
@@ -110,67 +120,73 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Các liên kết trang chính */}
+        {/* Các liên kết chuyển tab nhanh không load lại trang */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Link
-            href="/"
+          <button
+            type="button"
+            onClick={(e) => handleNavClick('menu', e)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
+              padding: '7px 14px',
               borderRadius: '8px',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              textDecoration: 'none',
-              background: '#eff6ff',
-              color: '#1d4ed8',
-              border: '1px solid #bfdbfe',
+              fontSize: '0.85rem',
+              fontWeight: activeTab === 'menu' ? 700 : 500,
+              background: activeTab === 'menu' ? '#eff6ff' : '#f8fafc',
+              color: activeTab === 'menu' ? '#1d4ed8' : '#475569',
+              border: activeTab === 'menu' ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
             }}
           >
-            <LayoutGrid size={15} />
+            <LayoutGrid size={15} color={activeTab === 'menu' ? '#1d4ed8' : '#64748b'} />
             <span>Tạo thực đơn</span>
-          </Link>
+          </button>
 
-          <Link
-            href="/schools"
+          <button
+            type="button"
+            onClick={(e) => handleNavClick('schools', e)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
+              padding: '7px 14px',
               borderRadius: '8px',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-              background: '#f8fafc',
-              color: '#334155',
-              border: '1px solid #e2e8f0',
+              fontSize: '0.85rem',
+              fontWeight: activeTab === 'schools' ? 700 : 500,
+              background: activeTab === 'schools' ? '#eff6ff' : '#f8fafc',
+              color: activeTab === 'schools' ? '#1d4ed8' : '#475569',
+              border: activeTab === 'schools' ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
             }}
           >
-            <School size={15} color="#2563eb" />
+            <School size={15} color={activeTab === 'schools' ? '#2563eb' : '#64748b'} />
             <span>Trường học</span>
-          </Link>
+          </button>
 
-          <Link
-            href="/dishes"
+          <button
+            type="button"
+            onClick={(e) => handleNavClick('dishes', e)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
+              padding: '7px 14px',
               borderRadius: '8px',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-              background: '#f8fafc',
-              color: '#334155',
-              border: '1px solid #e2e8f0',
+              fontSize: '0.85rem',
+              fontWeight: activeTab === 'dishes' ? 700 : 500,
+              background: activeTab === 'dishes' ? '#ecfdf5' : '#f8fafc',
+              color: activeTab === 'dishes' ? '#047857' : '#475569',
+              border: activeTab === 'dishes' ? '1px solid #a7f3d0' : '1px solid #e2e8f0',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
             }}
           >
-            <ChefHat size={15} color="#059669" />
+            <ChefHat size={15} color={activeTab === 'dishes' ? '#059669' : '#64748b'} />
             <span>Kho món ăn</span>
-          </Link>
+          </button>
         </nav>
 
         {/* Trạng thái thực đơn đang sửa */}

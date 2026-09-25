@@ -7,6 +7,8 @@ import { MenuForm } from '@/components/MenuForm';
 import { MenuPreview } from '@/components/MenuPreview';
 import { DishManagerModal } from '@/components/DishManagerModal';
 import { SavedMenusModal } from '@/components/SavedMenusModal';
+import { SchoolsView } from '@/components/SchoolsView';
+import { DishesView } from '@/components/DishesView';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 // Dữ liệu mẫu khởi tạo chuẩn theo file tuan-3.docx
@@ -54,6 +56,7 @@ interface ToastMessage {
 }
 
 export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<'menu' | 'schools' | 'dishes'>('menu');
   const [menuData, setMenuData] = useState<IMenuData>(SAMPLE_WEEK_3_DATA);
   const [availableDishes, setAvailableDishes] = useState<IDishItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -219,6 +222,13 @@ export default function HomePage() {
     }
   };
 
+  // Chọn trường từ tab Trường học để lập thực đơn ngay lập tức
+  const handleSelectSchoolForMenu = (schoolName: string) => {
+    setMenuData((prev) => ({ ...prev, schoolName }));
+    setActiveTab('menu');
+    showToast(`Đã chọn ${schoolName} để lập thực đơn!`, 'success');
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Thanh điều hướng */}
@@ -231,9 +241,11 @@ export default function HomePage() {
         onSaveMenu={handleSaveMenu}
         isSaving={isSaving}
         dbStatus={dbStatus}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
 
-      {/* Khu vực làm việc chính: Biểu mẫu nhập liệu (trái) và Ảnh xem trước (phải) */}
+      {/* Khu vực nội dung hiển thị theo tab (Chuyển đổi tức thì 0ms, không load lại trang) */}
       <main
         style={{
           maxWidth: '1600px',
@@ -243,28 +255,45 @@ export default function HomePage() {
           flex: 1,
         }}
       >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
-            gap: '24px',
-            alignItems: 'start',
-          }}
-        >
-          {/* CỘT TRÁI: BIỂU MẪU NHẬP LIỆU */}
-          <section aria-label="Biểu mẫu thực đơn">
-            <MenuForm
-              menuData={menuData}
-              setMenuData={setMenuData}
-              availableDishes={availableDishes}
-            />
-          </section>
+        {activeTab === 'menu' && (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
+              gap: '24px',
+              alignItems: 'start',
+              animation: 'fadeIn 0.2s ease-out',
+            }}
+          >
+            {/* CỘT TRÁI: BIỂU MẪU NHẬP LIỆU */}
+            <section aria-label="Biểu mẫu thực đơn">
+              <MenuForm
+                menuData={menuData}
+                setMenuData={setMenuData}
+                availableDishes={availableDishes}
+              />
+            </section>
 
-          {/* CỘT PHẢI: ẢNH XEM TRƯỚC VÀ XUẤT FILE */}
-          <section aria-label="Xem trước thực đơn và xuất file">
-            <MenuPreview menuData={menuData} />
-          </section>
-        </div>
+            {/* CỘT PHẢI: ẢNH XEM TRƯỚC VÀ XUẤT FILE */}
+            <section aria-label="Xem trước thực đơn và xuất file">
+              <MenuPreview menuData={menuData} />
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'schools' && (
+          <SchoolsView
+            onSelectSchoolForMenu={handleSelectSchoolForMenu}
+            showToast={showToast}
+          />
+        )}
+
+        {activeTab === 'dishes' && (
+          <DishesView
+            onRefreshParentDishes={fetchDishes}
+            showToast={showToast}
+          />
+        )}
       </main>
 
       {/* Modal Quản lý kho món ăn */}
