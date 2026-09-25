@@ -1,0 +1,31 @@
+{
+  "name": "board-menu-maker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.48.0",
+    "mongodb-memory-server": "^11.3.0",
+    "mongoose": "^8.8.4",
+    "next": "^14.2.23",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.5"
+  }
+}
