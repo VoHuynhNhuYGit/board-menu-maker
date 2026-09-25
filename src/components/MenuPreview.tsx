@@ -15,7 +15,7 @@ export const MenuPreview: React.FC<MenuPreviewProps> = ({ menuData }) => {
   const [isExportingPng, setIsExportingPng] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [zoomScale, setZoomScale] = useState<number>(1);
-  const [fontTheme, setFontTheme] = useState<'times' | 'sans' | 'elegant'>('times');
+  const [fontTheme, setFontTheme] = useState<string>('times');
 
   // Chuẩn hóa tên file xuất
   const sanitizeFileName = (str: string) => {
@@ -117,15 +117,25 @@ export const MenuPreview: React.FC<MenuPreviewProps> = ({ menuData }) => {
     }
   };
 
-  // Chọn font chữ phù hợp
+  // Chọn font chữ phù hợp cho tấm bảng thực đơn
   const getFontFamily = () => {
     switch (fontTheme) {
       case 'times':
-        return '"Times New Roman", "Merriweather", Times, serif';
-      case 'sans':
+        return '"Times New Roman", Times, serif';
+      case 'opensans':
+        return '"Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      case 'roboto':
+        return '"Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      case 'bevietnam':
         return '"Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-      case 'elegant':
+      case 'merriweather':
         return '"Merriweather", Georgia, serif';
+      case 'lora':
+        return '"Lora", Georgia, serif';
+      case 'playfair':
+        return '"Playfair Display", Georgia, serif';
+      case 'montserrat':
+        return '"Montserrat", -apple-system, BlinkMacSystemFont, sans-serif';
       default:
         return '"Times New Roman", serif';
     }
@@ -157,23 +167,30 @@ export const MenuPreview: React.FC<MenuPreviewProps> = ({ menuData }) => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Palette size={16} color="#475569" />
-          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>Kiểu chữ:</span>
+          <Palette size={16} color="#2563eb" />
+          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>Phông chữ ảnh:</span>
           <select
             value={fontTheme}
-            onChange={(e) => setFontTheme(e.target.value as any)}
+            onChange={(e) => setFontTheme(e.target.value)}
             style={{
-              padding: '4px 8px',
+              padding: '5px 10px',
               borderRadius: '6px',
               border: '1px solid #cbd5e1',
               fontSize: '0.82rem',
+              fontWeight: 600,
               background: '#f8fafc',
               cursor: 'pointer',
+              color: '#0f172a',
             }}
           >
-            <option value="times">Chuẩn mẫu Word (Times New Roman)</option>
-            <option value="sans">Hiện đại (Be Vietnam Pro)</option>
-            <option value="elegant">Trang nhã (Merriweather Serif)</option>
+            <option value="times">Times New Roman (Chuẩn mẫu Word)</option>
+            <option value="opensans">Open Sans (Hiện đại, trong trẻo)</option>
+            <option value="roboto">Roboto (Chuẩn mực, dễ đọc)</option>
+            <option value="bevietnam">Be Vietnam Pro (Tối ưu tiếng Việt)</option>
+            <option value="merriweather">Merriweather (Serif trang nhã)</option>
+            <option value="lora">Lora (Serif cổ điển, thanh lịch)</option>
+            <option value="playfair">Playfair Display (Nghệ thuật, sang trọng)</option>
+            <option value="montserrat">Montserrat (Trẻ trung, năng động)</option>
           </select>
         </div>
 
