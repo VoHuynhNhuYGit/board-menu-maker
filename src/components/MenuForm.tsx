@@ -15,25 +15,29 @@ import {
   Sparkles,
   School,
   Check,
+  X,
 } from 'lucide-react';
 
 interface MenuFormProps {
   menuData: IMenuData;
   setMenuData: React.Dispatch<React.SetStateAction<IMenuData>>;
   availableDishes: IDishItem[];
+  onNavigateToSchools?: () => void;
 }
 
 export const MenuForm: React.FC<MenuFormProps> = ({
   menuData,
   setMenuData,
   availableDishes,
+  onNavigateToSchools,
 }) => {
   const [schools, setSchools] = useState<ISchoolItem[]>([]);
+  const [schoolSearch, setSchoolSearch] = useState('');
   const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
   const schoolDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Tải danh sách trường từ MongoDB để hỗ trợ autocomplete
-  useEffect(() => {
+  // Tải danh sách trường từ MongoDB
+  const fetchSchools = () => {
     fetch('/api/schools')
       .then((res) => res.json())
       .then((data) => {
@@ -42,6 +46,10 @@ export const MenuForm: React.FC<MenuFormProps> = ({
         }
       })
       .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchSchools();
   }, []);
 
   // Đóng dropdown khi click ngoài
@@ -59,7 +67,7 @@ export const MenuForm: React.FC<MenuFormProps> = ({
   }, []);
 
   const matchingSchools = schools.filter((s) =>
-    menuData.schoolName ? matchVietnamese(s.name, menuData.schoolName) : true
+    schoolSearch.trim() ? matchVietnamese(s.name, schoolSearch) : true
   );
 
   // Hàm tính thứ và định dạng "Ngày D/M" từ date string YYYY-MM-DD
@@ -225,32 +233,84 @@ export const MenuForm: React.FC<MenuFormProps> = ({
       {/* Thông tin trường và tuần */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
         <div style={{ position: 'relative' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>
-            <Building size={14} color="#2563eb" />
-            Tên trường học (Hỗ trợ gợi ý)
-          </label>
-          <input
-            type="text"
-            value={menuData.schoolName}
-            onChange={(e) => {
-              handleFieldChange('schoolName', e.target.value);
-              setShowSchoolDropdown(true);
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>
+              <Building size={14} color="#2563eb" />
+              Tên trường học (Chỉ lấy trong MongoDB)
+            </label>
+            {onNavigateToSchools && (
+              <button
+                type="button"
+                onClick={onNavigateToSchools}
+                style={{
+                  background: 'transparent',
+                  color: '#2563eb',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+                title="Đến trang quản lý trường để thêm hoặc sửa danh sách trường"
+              >
+                + Thêm trường
+              </button>
+            )}
+          </div>
+
+          {/* Ô chọn trường có sẵn trong MongoDB */}
+          <div
+            onClick={() => {
+              if (!showSchoolDropdown) {
+                fetchSchools();
+              }
+              setShowSchoolDropdown((prev) => !prev);
             }}
-            onFocus={() => setShowSchoolDropdown(true)}
-            placeholder="Ví dụ: Trường Tiểu học Trưng Vương"
             style={{
               width: '100%',
               padding: '9px 12px',
               borderRadius: '8px',
               border: '1px solid #cbd5e1',
               fontSize: '0.9rem',
-              color: '#0f172a',
+              color: menuData.schoolName ? '#0f172a' : '#94a3b8',
               background: '#f8fafc',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              userSelect: 'none',
             }}
-          />
+          >
+            <span style={{ fontWeight: menuData.schoolName ? 600 : 400, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+              {menuData.schoolName || '-- Chọn trường có sẵn trong MongoDB --'}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {menuData.schoolName && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFieldChange('schoolName', '');
+                  }}
+                  title="Bỏ chọn trường"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#94a3b8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '2px',
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              )}
+              <ChevronDown size={16} color="#64748b" />
+            </div>
+          </div>
 
-          {/* Hộp gợi ý trường học */}
-          {showSchoolDropdown && matchingSchools.length > 0 && (
+          {/* Hộp Dropdown danh sách trường có sẵn trong MongoDB */}
+          {showSchoolDropdown && (
             <div
               ref={schoolDropdownRef}
               style={{
@@ -260,43 +320,122 @@ export const MenuForm: React.FC<MenuFormProps> = ({
                 right: 0,
                 background: '#ffffff',
                 border: '1px solid #cbd5e1',
-                borderRadius: '8px',
-                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                borderRadius: '10px',
+                boxShadow: '0 10px 20px -3px rgba(0,0,0,0.12)',
                 zIndex: 100,
-                maxHeight: '200px',
+                maxHeight: '260px',
                 overflowY: 'auto',
-                padding: '4px',
+                padding: '6px',
               }}
             >
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', padding: '4px 8px', fontWeight: 600 }}>
-                Chọn từ danh sách trường đã lưu trong MongoDB:
-              </div>
-              {matchingSchools.map((s) => (
-                <div
-                  key={s._id || s.name}
-                  onClick={() => {
-                    handleFieldChange('schoolName', s.name);
-                    setShowSchoolDropdown(false);
-                  }}
+              {/* Ô tìm kiếm nhanh trường trong MongoDB */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#f1f5f9',
+                  borderRadius: '6px',
+                  padding: '6px 8px',
+                  marginBottom: '6px',
+                }}
+              >
+                <Building size={14} color="#64748b" />
+                <input
+                  type="text"
+                  value={schoolSearch}
+                  onChange={(e) => setSchoolSearch(e.target.value)}
+                  placeholder="Gõ tìm trường trong MongoDB..."
+                  onClick={(e) => e.stopPropagation()}
+                  autoFocus
                   style={{
-                    padding: '7px 10px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    fontSize: '0.85rem',
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: '0.82rem',
+                    width: '100%',
+                    color: '#1e293b',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: 600, color: '#1e293b' }}>{s.name}</span>
-                    {s.address && <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{s.address}</span>}
+                />
+                {schoolSearch && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSchoolSearch('');
+                    }}
+                    style={{ background: 'transparent', color: '#94a3b8' }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
+              </div>
+
+              <div style={{ fontSize: '0.7rem', color: '#64748b', padding: '2px 8px 6px', fontWeight: 600 }}>
+                Chọn 1 trường trong MongoDB ({matchingSchools.length}):
+              </div>
+
+              {matchingSchools.length > 0 ? (
+                matchingSchools.map((s) => (
+                  <div
+                    key={s._id || s.name}
+                    onClick={() => {
+                      handleFieldChange('schoolName', s.name);
+                      setShowSchoolDropdown(false);
+                      setSchoolSearch('');
+                    }}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: '0.85rem',
+                      background: menuData.schoolName === s.name ? '#eff6ff' : 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (menuData.schoolName !== s.name) e.currentTarget.style.background = '#f8fafc';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (menuData.schoolName !== s.name) e.currentTarget.style.background = 'transparent';
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{s.name}</span>
+                      {s.address && <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{s.address}</span>}
+                    </div>
+                    {menuData.schoolName === s.name && <Check size={14} color="#2563eb" />}
                   </div>
-                  {menuData.schoolName === s.name && <Check size={14} color="#2563eb" />}
+                ))
+              ) : (
+                <div style={{ padding: '12px 8px', textAlign: 'center', color: '#94a3b8', fontSize: '0.8rem' }}>
+                  Không có trường nào khớp trong MongoDB.
+                  {onNavigateToSchools && (
+                    <div style={{ marginTop: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSchoolDropdown(false);
+                          onNavigateToSchools();
+                        }}
+                        style={{
+                          background: '#eff6ff',
+                          color: '#2563eb',
+                          border: '1px solid #bfdbfe',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        + Bấm vào đây để thêm trường mới
+                      </button>
+                    </div>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>

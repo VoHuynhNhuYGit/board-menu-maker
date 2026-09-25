@@ -271,6 +271,7 @@ export default function HomePage() {
                 menuData={menuData}
                 setMenuData={setMenuData}
                 availableDishes={availableDishes}
+                onNavigateToSchools={() => setActiveTab('schools')}
               />
             </section>
 
