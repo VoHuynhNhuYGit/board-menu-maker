@@ -80,34 +80,29 @@ export const MenuPreview = forwardRef<MenuPreviewHandle, MenuPreviewProps>(
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const margin = 10;
-        const printWidth = pageWidth - margin * 2;
 
         const img = new Image();
         img.src = imgData;
 
-        await new Promise((resolve) => {
-          img.onload = resolve;
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Không thể đọc ảnh xem trước để tạo PDF.'));
         });
 
-        const imgAspect = img.height / img.width;
-        const printHeight = printWidth * imgAspect;
+        // Thu nhỏ theo cả chiều rộng và chiều cao để toàn bộ thực đơn luôn nằm
+        // trên đúng một trang A4, không cắt và không lặp dòng cuối.
+        const availableWidth = pageWidth - margin * 2;
+        const availableHeight = pageHeight - margin * 2;
+        const imageScale = Math.min(
+          availableWidth / img.width,
+          availableHeight / img.height
+        );
+        const printWidth = img.width * imageScale;
+        const printHeight = img.height * imageScale;
+        const x = (pageWidth - printWidth) / 2;
+        const y = (pageHeight - printHeight) / 2;
 
-        if (printHeight <= pageHeight - margin * 2) {
-          pdf.addImage(imgData, 'PNG', margin, margin, printWidth, printHeight);
-        } else {
-          let heightLeft = printHeight;
-          let position = margin;
-
-          pdf.addImage(imgData, 'PNG', margin, position, printWidth, printHeight);
-          heightLeft -= pageHeight - margin * 2;
-
-          while (heightLeft > 0) {
-            position = heightLeft - printHeight + margin;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', margin, position, printWidth, printHeight);
-            heightLeft -= pageHeight - margin * 2;
-          }
-        }
+        pdf.addImage(imgData, 'PNG', x, y, printWidth, printHeight);
 
         pdf.save(`${baseFileName}.pdf`);
       } catch (err) {
