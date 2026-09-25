@@ -108,6 +108,15 @@ export default function HomePage() {
             setMenuData(week3Menu);
           }
         }
+
+        // Nếu có query param ?school=... từ trang quản lý trường
+        if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const schoolParam = urlParams.get('school');
+          if (schoolParam) {
+            setMenuData((prev) => ({ ...prev, schoolName: decodeURIComponent(schoolParam) }));
+          }
+        }
       } catch (e) {
         console.error('Lỗi khởi tạo dữ liệu:', e);
       }

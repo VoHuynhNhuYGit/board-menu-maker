@@ -6,6 +6,15 @@ export interface IDishItem {
   usageCount?: number;
 }
 
+export interface ISchoolItem {
+  _id?: string;
+  name: string;
+  normalizedName?: string;
+  address?: string;
+  phone?: string;
+  notes?: string;
+}
+
 export interface IDayPlan {
   dayOfWeek: string;    // Ví dụ: "2", "3", "4", "5"
   dateDisplay: string;  // Ví dụ: "Ngày 28/9"

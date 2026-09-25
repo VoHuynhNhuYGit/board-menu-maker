@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
-import { IMenuData, IDayPlan, IDishItem } from '@/types';
+import React, { useState, useEffect, useRef } from 'react';
+import { IMenuData, IDayPlan, IDishItem, ISchoolItem } from '@/types';
+import { matchVietnamese } from '@/lib/vietnamese';
 import { MealDishesList } from './MealDishesList';
 import {
   Calendar,
@@ -12,6 +13,8 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  School,
+  Check,
 } from 'lucide-react';
 
 interface MenuFormProps {
@@ -25,6 +28,40 @@ export const MenuForm: React.FC<MenuFormProps> = ({
   setMenuData,
   availableDishes,
 }) => {
+  const [schools, setSchools] = useState<ISchoolItem[]>([]);
+  const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
+  const schoolDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Tải danh sách trường từ MongoDB để hỗ trợ autocomplete
+  useEffect(() => {
+    fetch('/api/schools')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setSchools(data.data || []);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  // Đóng dropdown khi click ngoài
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        schoolDropdownRef.current &&
+        !schoolDropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowSchoolDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const matchingSchools = schools.filter((s) =>
+    menuData.schoolName ? matchVietnamese(s.name, menuData.schoolName) : true
+  );
+
   // Hàm tính thứ và định dạng "Ngày D/M" từ date string YYYY-MM-DD
   const calculateDayInfo = (dateStr: string) => {
     if (!dateStr) return { dayOfWeek: '2', dateDisplay: '' };
@@ -187,15 +224,19 @@ export const MenuForm: React.FC<MenuFormProps> = ({
 
       {/* Thông tin trường và tuần */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-        <div>
+        <div style={{ position: 'relative' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 600, color: '#475569', marginBottom: '6px' }}>
             <Building size={14} color="#2563eb" />
-            Tên trường học
+            Tên trường học (Hỗ trợ gợi ý)
           </label>
           <input
             type="text"
             value={menuData.schoolName}
-            onChange={(e) => handleFieldChange('schoolName', e.target.value)}
+            onChange={(e) => {
+              handleFieldChange('schoolName', e.target.value);
+              setShowSchoolDropdown(true);
+            }}
+            onFocus={() => setShowSchoolDropdown(true)}
             placeholder="Ví dụ: Trường Tiểu học Trưng Vương"
             style={{
               width: '100%',
@@ -207,6 +248,57 @@ export const MenuForm: React.FC<MenuFormProps> = ({
               background: '#f8fafc',
             }}
           />
+
+          {/* Hộp gợi ý trường học */}
+          {showSchoolDropdown && matchingSchools.length > 0 && (
+            <div
+              ref={schoolDropdownRef}
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 4px)',
+                left: 0,
+                right: 0,
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: '8px',
+                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                zIndex: 100,
+                maxHeight: '200px',
+                overflowY: 'auto',
+                padding: '4px',
+              }}
+            >
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8', padding: '4px 8px', fontWeight: 600 }}>
+                Chọn từ danh sách trường đã lưu trong MongoDB:
+              </div>
+              {matchingSchools.map((s) => (
+                <div
+                  key={s._id || s.name}
+                  onClick={() => {
+                    handleFieldChange('schoolName', s.name);
+                    setShowSchoolDropdown(false);
+                  }}
+                  style={{
+                    padding: '7px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '0.85rem',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f5f9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 600, color: '#1e293b' }}>{s.name}</span>
+                    {s.address && <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{s.address}</span>}
+                  </div>
+                  {menuData.schoolName === s.name && <Check size={14} color="#2563eb" />}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>

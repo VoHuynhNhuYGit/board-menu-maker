@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { IMenuData } from '@/types';
 import {
   UtensilsCrossed,
@@ -10,6 +11,9 @@ import {
   PlusCircle,
   RotateCcw,
   Sparkles,
+  School,
+  ChefHat,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -76,9 +80,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>
-                School Menu Maker
-              </h1>
+              <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <h1 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px', margin: 0 }}>
+                  School Menu Maker
+                </h1>
+              </Link>
               {/* Trạng thái MongoDB */}
               <div
                 style={{
@@ -103,6 +109,69 @@ export const Navbar: React.FC<NavbarProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Các liên kết trang chính */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Link
+            href="/"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              border: '1px solid #bfdbfe',
+            }}
+          >
+            <LayoutGrid size={15} />
+            <span>Tạo thực đơn</span>
+          </Link>
+
+          <Link
+            href="/schools"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              background: '#f8fafc',
+              color: '#334155',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <School size={15} color="#2563eb" />
+            <span>Trường học</span>
+          </Link>
+
+          <Link
+            href="/dishes"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              background: '#f8fafc',
+              color: '#334155',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <ChefHat size={15} color="#059669" />
+            <span>Kho món ăn</span>
+          </Link>
+        </nav>
 
         {/* Trạng thái thực đơn đang sửa */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

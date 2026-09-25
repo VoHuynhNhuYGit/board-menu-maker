@@ -184,6 +184,37 @@ async function checkAndSeedData() {
       await Menu.create(sampleMenu);
       console.log('[MongoDB Seeder] Sample Week 3 menu created successfully.');
     }
+
+    const School = (await import('../models/School')).default;
+    const schoolCount = await School.countDocuments();
+    if (schoolCount === 0) {
+      console.log('[MongoDB Seeder] Seeding initial schools list...');
+      const sampleSchools = [
+        {
+          name: 'Trường Tiểu học Trưng Vương',
+          normalizedName: removeVietnameseTones('Trường Tiểu học Trưng Vương'),
+          address: '260 Hai Bà Trưng, Phường Tân Định, Quận 1, TP.HCM',
+          phone: '028 3829 1234',
+          notes: 'Mẫu thực đơn chuẩn theo file Word',
+        },
+        {
+          name: 'Trường Tiểu học Lê Quý Đôn',
+          normalizedName: removeVietnameseTones('Trường Tiểu học Lê Quý Đôn'),
+          address: '110 Lê Lợi, Quận 3, TP.HCM',
+          phone: '028 3930 5678',
+          notes: 'Bán trú 2 buổi/ngày',
+        },
+        {
+          name: 'Trường Tiểu học Nguyễn Huệ',
+          normalizedName: removeVietnameseTones('Trường Tiểu học Nguyễn Huệ'),
+          address: '45 Nguyễn Huệ, Quận 1, TP.HCM',
+          phone: '028 3822 9999',
+          notes: 'Chuẩn quốc gia',
+        },
+      ];
+      await School.insertMany(sampleSchools);
+      console.log('[MongoDB Seeder] Sample schools created successfully.');
+    }
   } catch (err) {
     console.error('[MongoDB Seeder] Error during data seeding:', err);
   }
